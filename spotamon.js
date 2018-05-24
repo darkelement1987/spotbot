@@ -1,6 +1,9 @@
 var mysql = require('mysql');
 const Discord = require('discord.js');
 const client = new Discord.Client();
+const currentdate = new Date();
+const datetime = "[" + currentdate.getHours() + ":" 
++ currentdate.getMinutes() + ":" + currentdate.getSeconds() + "] ";
 
 // START CONFIG
 
