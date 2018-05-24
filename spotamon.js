@@ -99,7 +99,7 @@ client.on('message', message => {
         pool.getConnection(function(err, connection) {
             pool.query("SELECT COUNT(*) FROM spots;", function(error, result, fields) {
                 if (result[0]['COUNT(*)'] >= 1) {
-                    console.log(datetime + `Number of spots requested requested by ` + message.author.username);
+                    console.log(datetime + `Number of spots requested by ` + message.author.username);
                     message.channel.send(result[0]['COUNT(*)'] + ` Pokemon were spotted in the last 15 minutes`);
                     connection.release();
                 } else {
