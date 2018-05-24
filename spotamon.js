@@ -42,27 +42,27 @@ client.on('message', message => {
     let user = message.author;
     const args = message.content.slice(prefix.length).trim().split(/ +/g);
     const command = args.shift().toLowerCase();
-    var dexid
-    dexid = args[0];
+    var parameter
+    parameter = args[0];
 
     if (message.author.bot) return;
     if (message.content.indexOf(prefix) !== 0) return;
 
     if (command === 'pokedex') {
 
-        if (typeof dexid != 'undefined' && dexid) {
-            if (!isNumber(dexid)) {
+        if (typeof parameter != 'undefined' && parameter) {
+            if (!isNumber(parameter)) {
                 message.channel.send(`Wrong Pokedex format`);
                 return;
             }
             pool.getConnection(function(err, connection) {
-                pool.query("SELECT monster FROM pokedex WHERE id = " + dexid, function(error, result, rows, fields, data) {
+                pool.query("SELECT monster FROM pokedex WHERE id = " + parameter, function(error, result, rows, fields, data) {
                     if (result.length >= 1) {
-                        console.log(datetime + `Pokemon ${dexid} (` + result[0].monster + `) requested by ` + message.author.username);
-                        message.channel.send(`Pokemon ${dexid} is: ` + (result[0].monster));
+                        console.log(datetime + `Pokemon ${parameter} (` + result[0].monster + `) requested by ` + message.author.username);
+                        message.channel.send(`Pokemon ${parameter} is: ` + (result[0].monster));
                     } else if (rows.length !== 0) {
-                        console.log(datetime + `Pokemon ${dexid} requested by ` + message.author.username);
-                        message.channel.send(`Pokemon id '` + dexid + `' does not exist`);
+                        console.log(datetime + `Pokemon ${parameter} requested by ` + message.author.username);
+                        message.channel.send(`Pokemon id '` + parameter + `' does not exist`);
                     };
                     // Handle error after the release.
 
@@ -83,7 +83,7 @@ client.on('message', message => {
 
     if (command === 'commands') {
         message.channel.send(`hi ` + message.author.toString() + `\n\n**Current commands:**\n`+ prefix + `pokedex <id>\n`
-		+ prefix + `demo\n` + prefix + `spots\n` + prefix + `lastmon\n` + prefix + `gym <id>\n` + prefix + `gyms`);
+		+ prefix + `demo\n` + prefix + `spots\n` + prefix + `lastmon\n` + prefix + `gym <id>\n` + prefix + `gyms\n` + prefix + `spotted`);
     } else
 		
     if (command === 'time') {
@@ -99,11 +99,11 @@ client.on('message', message => {
         pool.getConnection(function(err, connection) {
             pool.query("SELECT COUNT(*) FROM spots;", function(error, result, fields) {
                 if (result[0]['COUNT(*)'] >= 1) {
-                    console.log(datetime + `Number of spots requested by ` + message.author.username);
+                    console.log(datetime + `Number of spots requested requested by ` + message.author.username);
                     message.channel.send(result[0]['COUNT(*)'] + ` Pokemon were spotted in the last 15 minutes`);
                     connection.release();
                 } else {
-                    console.log(datetime + `Number of spots requested requested by ` + message.author.username + ` but non were available`);
+                    console.log(datetime + `Number of spots requested by ` + message.author.username + ` but non were available`);
                     message.channel.send(`No spots available`);
                     connection.release()
                 };
@@ -142,7 +142,7 @@ client.on('message', message => {
 		
     if (command === 'gyms') {
         pool.getConnection(function(err, connection) {
-            pool.query("SELECT COUNT(*) FROM gyms;", function(error, result, fields) {
+            pool.query("SELECT COUNT(*) FROM gyms", function(error, result, fields) {
                 if (result.length >= 1) {
                     console.log(datetime + `Number of gyms requested by ` + message.author.username);
                     message.channel.send(result[0]['COUNT(*)'] + ` gyms in database`);
@@ -162,19 +162,19 @@ client.on('message', message => {
 		
     if (command === 'gym') {
 
-        if (typeof dexid != 'undefined' && dexid) {
-            if (!isNumber(dexid)) {
+        if (typeof parameter != 'undefined' && parameter) {
+            if (!isNumber(parameter)) {
                 message.channel.send(`Wrong GYM-ID format`);
                 return;
             }
             pool.getConnection(function(err, connection) {
-                pool.query("SELECT gname, gid FROM gyms WHERE gid = " + dexid, function(error, result, rows, fields, data) {
+                pool.query("SELECT gname, gid FROM gyms WHERE gid = " + parameter, function(error, result, rows, fields, data) {
                     if (result.length >= 1) {
-                        console.log(datetime + `Gym ${dexid} (` + result[0].gname + `) requested by ` + message.author.username);
-                        message.channel.send(`Gym ${dexid} is: ` + (result[0].gname));
+                        console.log(datetime + `Gym ${parameter} (` + result[0].gname + `) requested by ` + message.author.username);
+                        message.channel.send(`Gym ${parameter} is: ` + (result[0].gname));
                     } else if (rows.length !== 0) {
-                        console.log(datetime + `Pokemon ${dexid} requested by ` + message.author.username);
-                        message.channel.send(`Gym id '` + dexid + `' does not exist`);
+                        console.log(datetime + `Gym ${parameter} (` + result[0].gname + `) requested by ` + message.author.username);
+                        message.channel.send(`Gym id '` + parameter + `' does not exist`);
                     };
                     // Handle error after the release.
 
@@ -191,6 +191,26 @@ client.on('message', message => {
         };
 
 
+    } else
+		
+if (command === 'spotted') {
+        pool.getConnection(function(err, connection) {
+            pool.query("SELECT COUNT(pokedex.monster) FROM spots, pokedex WHERE monster = \"" + parameter + "\" and spots.pokemon = pokedex.id", function(error, result, fields) {
+                if (result.length >= 1) {
+                    console.log(datetime + `Spot count requested for ` + parameter + ` by ` + message.author.username);
+                    message.channel.send(parameter + ` was spotted ` + result[0]['COUNT(pokedex.monster)'] + `x in the last 15 minutes`);
+                    connection.release();
+                } else {
+                    message.channel.send(`Not seen`);
+                    connection.release()
+                };
+
+                // Handle error after the release.
+                if (error) throw error;
+
+                // Don't use the connection here, it has been returned to the pool.
+            });
+        });
     };
 
 });
