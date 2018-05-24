@@ -1,2 +1,2 @@
-# spotbot
+# Spotbot
 Spotamon Discord Bot
