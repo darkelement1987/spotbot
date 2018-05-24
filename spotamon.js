@@ -109,7 +109,7 @@ client.on('message', message => {
 
     if (command === 'lastmon') {
         pool.getConnection(function(err, connection) {
-            pool.query("SELECT pokedex.monster, spots.id, spots.date,spots.fulladdress FROM pokedex,spots WHERE pokedex.id = spots.pokemon ORDER BY spots.id DESC LIMIT 3", function(error, result, rows, fields) {
+            pool.query("SELECT pokedex.monster, spots.spotid, spots.date,spots.fulladdress FROM pokedex,spots WHERE pokedex.id = spots.pokemon ORDER BY spots.spotid DESC LIMIT 3", function(error, result, rows, fields) {
                 if (result.length >= 3) {
                     console.log(`Last 3 spots requested by ` + message.author.username);
                     message.channel.send(`**Last 3 spots:  **`)
