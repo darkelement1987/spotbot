@@ -246,7 +246,7 @@ client.on('message', message => {
                     console.log(datetime + `Gym search '` + parameter + `' by ` + message.author.username);
                     message.channel.send(`**Found: **`);
                     for (i = 0; i < result.length; i++) {
-                        message.channel.send(`Name: ` + result[i].gname + website + `/?loc=` + result[i].glatitude + `,` + result[i].glongitude + `&zoom=19`);
+                        message.channel.send([i+1] + `. ` + result[i].gname + ` ` + website + `/?loc=` + result[i].glatitude + `,` + result[i].glongitude + `&zoom=19`);
                     }
                     connection.release();
 
