@@ -85,8 +85,6 @@ client.on('message', message => {
 
     if (command === 'commands') {
 
-        parameter = parameter.replace(/['"]+/g, '')
-
         message.channel.send(`hi ` + message.author.toString() + `\n\n**Current commands:**\n` + prefix + `pokedex <id>\n` +
             prefix + `demo\n` + prefix + `spots\n` + prefix + `lastmon\n` + prefix + `gym <id>\n` + prefix + `gyms\n` + prefix + `spotted`);
     } else
