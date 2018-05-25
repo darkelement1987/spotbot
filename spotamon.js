@@ -2,14 +2,15 @@ var mysql = require('mysql');
 const Discord = require('discord.js');
 const client = new Discord.Client();
 const currentdate = new Date();
-const datetime = "[" + currentdate.getHours() + ":" 
-+ currentdate.getMinutes() + ":" + currentdate.getSeconds() + "] ";
+const datetime = "[" + currentdate.getHours() + ":" +
+    currentdate.getMinutes() + ":" + currentdate.getSeconds() + "] ";
 
 // START CONFIG
 
-const prefix = "";
+const website = ""; // <-- Website of your map, full url without backslash '/' at the end
+const prefix = ""; // <-- Prefix for your commands
 const logchannel = ""; // <-- Channel id where the 'logged in'-msg will show
-const bottoken = "";
+const bottoken = ""; // <-- Discord bot token
 
 var pool = mysql.createPool({
     connectionLimit: 10,
@@ -82,17 +83,12 @@ client.on('message', message => {
     } else
 
     if (command === 'commands') {
-        message.channel.send(`hi ` + message.author.toString() + `\n\n**Current commands:**\n`+ prefix + `pokedex <id>\n`
-		+ prefix + `demo\n` + prefix + `spots\n` + prefix + `lastmon\n` + prefix + `gym <id>\n` + prefix + `gyms\n` + prefix + `spotted`);
+        message.channel.send(`hi ` + message.author.toString() + `\n\n**Current commands:**\n` + prefix + `pokedex <id>\n` +
+            prefix + `demo\n` + prefix + `spots\n` + prefix + `lastmon\n` + prefix + `gym <id>\n` + prefix + `gyms\n` + prefix + `spotted`);
     } else
-		
+
     if (command === 'time') {
-        message.channel.send(`Time is: `+ (datetime));
-    } else
-		
-	
-    if (command === 'demo') {
-        message.channel.send(`hi ` + message.author.toString() + `\n\nDemo map is available @ https://www.spotamon.com/demo/`);
+        message.channel.send(`Time is: ` + (datetime));
     } else
 
     if (command === 'spots') {
@@ -118,13 +114,13 @@ client.on('message', message => {
 
     if (command === 'lastmon') {
         pool.getConnection(function(err, connection) {
-            pool.query("SELECT pokedex.monster, spots.spotid, spots.date,spots.fulladdress FROM pokedex,spots WHERE pokedex.id = spots.pokemon ORDER BY spots.spotid DESC LIMIT 3", function(error, result, rows, fields) {
+            pool.query("SELECT pokedex.monster, spots.spotid, spots.date,spots.fulladdress, spots.spotter FROM pokedex,spots WHERE pokedex.id = spots.pokemon ORDER BY spots.spotid DESC LIMIT 3", function(error, result, rows, fields) {
                 if (result.length >= 3) {
                     console.log(datetime + `Last 3 spots requested by ` + message.author.username);
                     message.channel.send(`**Last 3 spots:  **`)
-                    message.channel.send(`Last spotted:  ` + result[0].monster + ` at ` + result[0].fulladdress)
-                    message.channel.send(`Last spotted:  ` + result[1].monster + ` at ` + result[1].fulladdress)
-                    message.channel.send(`Last spotted:  ` + result[2].monster + ` at ` + result[2].fulladdress)
+                    message.channel.send(`1.  ` + result[0].monster + ` at ` + result[0].fulladdress)
+                    message.channel.send(`2.  ` + result[1].monster + ` at ` + result[1].fulladdress)
+                    message.channel.send(`3.  ` + result[2].monster + ` at ` + result[2].fulladdress)
                     connection.release();
                 } else {
                     console.log(datetime + `Last 3 spots requested by ` + message.author.username + ` but non were available`);
@@ -139,7 +135,29 @@ client.on('message', message => {
             });
         });
     } else
-		
+
+    if (command === 'lastraid') {
+        pool.getConnection(function(err, connection) {
+            pool.query("SELECT monster, gname from spotraid, gyms, pokedex WHERE pokedex.id=spotraid.rboss AND gyms.actraid=1 ORDER BY date DESC LIMIT 1", function(error, result, rows, fields) {
+                if (result.length >= 1) {
+                    console.log(datetime + `Last raid requested by ` + message.author.username);
+                    message.channel.send(`**Last raid:  **`)
+                    message.channel.send(`1.  ` + result[0].monster + ` at ` + result[0].gname)
+                    connection.release();
+                } else {
+                    console.log(datetime + `Last raid requested by ` + message.author.username + ` but non were available`);
+                    message.channel.send(`No last raid available`);
+                    connection.release()
+                };
+
+                // Handle error after the release.
+                if (error) throw error;
+
+                // Don't use the connection here, it has been returned to the pool.
+            });
+        });
+    } else
+
     if (command === 'gyms') {
         pool.getConnection(function(err, connection) {
             pool.query("SELECT COUNT(*) FROM gyms", function(error, result, fields) {
@@ -159,7 +177,7 @@ client.on('message', message => {
             });
         });
     } else
-		
+
     if (command === 'gym') {
 
         if (typeof parameter != 'undefined' && parameter) {
@@ -192,16 +210,48 @@ client.on('message', message => {
 
 
     } else
-		
-if (command === 'spotted') {
+
+    if (command === 'spotted') {
         pool.getConnection(function(err, connection) {
             pool.query("SELECT COUNT(pokedex.monster) FROM spots, pokedex WHERE monster = \"" + parameter + "\" and spots.pokemon = pokedex.id", function(error, result, fields) {
-                if (result.length >= 1) {
+                if (result[0]['COUNT(pokedex.monster)'] >= 1) {
                     console.log(datetime + `Spot count requested for ` + parameter + ` by ` + message.author.username);
-                    message.channel.send(parameter + ` was spotted ` + result[0]['COUNT(pokedex.monster)'] + `x in the last 15 minutes`);
+                    message.channel.send(`'` + parameter + `' was spotted ` + result[0]['COUNT(pokedex.monster)'] + `x in the last 15 minutes`);
                     connection.release();
                 } else {
-                    message.channel.send(`Not seen`);
+                    message.channel.send(`'` + parameter + `' was not seen`);
+                    connection.release()
+                };
+
+                // Handle error after the release.
+                if (error) throw error;
+
+                // Don't use the connection here, it has been returned to the pool.
+            });
+        });
+    } else
+
+    if (command === 'searchgym') {
+        if (!parameter) {
+            message.channel.send(`No name given`);
+            return;
+        }
+
+        parameter = parameter.replace(/['"]+/g, '')
+
+        pool.getConnection(function(err, connection) {
+            pool.query("SELECT gname, glatitude, glongitude from gyms where gyms.gname LIKE \"%" + parameter + "%\"", function(error, result, fields) {
+                if (result.length > 0) {
+
+                    console.log(datetime + `Gym search '` + parameter + `' by ` + message.author.username);
+                    message.channel.send(`**Found: **`);
+                    for (i = 0; i < result.length; i++) {
+                        message.channel.send(`Name: ` + result[i].gname + website + `/?loc=` + result[i].glatitude + `,` + result[i].glongitude + `&zoom=19`);
+                    }
+                    connection.release();
+
+                } else {
+                    message.channel.send(`No results found, be more specific`);
                     connection.release()
                 };
 
