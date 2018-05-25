@@ -56,6 +56,7 @@ client.on('message', message => {
                 message.channel.send(`Wrong Pokedex format`);
                 return;
             }
+
             pool.getConnection(function(err, connection) {
                 pool.query("SELECT monster FROM pokedex WHERE id = " + parameter, function(error, result, rows, fields, data) {
                     if (result.length >= 1) {
@@ -83,15 +84,15 @@ client.on('message', message => {
     } else
 
     if (command === 'commands') {
+
+        parameter = parameter.replace(/['"]+/g, '')
+
         message.channel.send(`hi ` + message.author.toString() + `\n\n**Current commands:**\n` + prefix + `pokedex <id>\n` +
             prefix + `demo\n` + prefix + `spots\n` + prefix + `lastmon\n` + prefix + `gym <id>\n` + prefix + `gyms\n` + prefix + `spotted`);
     } else
 
-    if (command === 'time') {
-        message.channel.send(`Time is: ` + (datetime));
-    } else
-
     if (command === 'spots') {
+
         pool.getConnection(function(err, connection) {
             pool.query("SELECT COUNT(*) FROM spots;", function(error, result, fields) {
                 if (result[0]['COUNT(*)'] >= 1) {
@@ -113,6 +114,7 @@ client.on('message', message => {
     } else
 
     if (command === 'lastmon') {
+
         pool.getConnection(function(err, connection) {
             pool.query("SELECT pokedex.monster, spots.spotid, spots.date,spots.fulladdress, spots.spotter FROM pokedex,spots WHERE pokedex.id = spots.pokemon ORDER BY spots.spotid DESC LIMIT 3", function(error, result, rows, fields) {
                 if (result.length >= 3) {
@@ -137,6 +139,7 @@ client.on('message', message => {
     } else
 
     if (command === 'lastraid') {
+
         pool.getConnection(function(err, connection) {
             pool.query("SELECT monster, gname from spotraid, gyms, pokedex WHERE pokedex.id=spotraid.rboss AND gyms.actraid=1 ORDER BY date DESC LIMIT 1", function(error, result, rows, fields) {
                 if (result.length >= 1) {
@@ -159,6 +162,7 @@ client.on('message', message => {
     } else
 
     if (command === 'gyms') {
+
         pool.getConnection(function(err, connection) {
             pool.query("SELECT COUNT(*) FROM gyms", function(error, result, fields) {
                 if (result.length >= 1) {
@@ -185,13 +189,16 @@ client.on('message', message => {
                 message.channel.send(`Wrong GYM-ID format`);
                 return;
             }
+
+            parameter = parameter.replace(/['"]+/g, '')
+
             pool.getConnection(function(err, connection) {
                 pool.query("SELECT gname, gid FROM gyms WHERE gid = " + parameter, function(error, result, rows, fields, data) {
                     if (result.length >= 1) {
                         console.log(datetime + `Gym ${parameter} (` + result[0].gname + `) requested by ` + message.author.username);
                         message.channel.send(`Gym ${parameter} is: ` + (result[0].gname));
                     } else if (rows.length !== 0) {
-                        console.log(datetime + `Gym ${parameter} (` + result[0].gname + `) requested by ` + message.author.username);
+                        console.log(datetime + `Gym ${parameter} requested by ` + message.author.username + `, but does not exist`);
                         message.channel.send(`Gym id '` + parameter + `' does not exist`);
                     };
                     // Handle error after the release.
@@ -212,6 +219,14 @@ client.on('message', message => {
     } else
 
     if (command === 'spotted') {
+
+        if (!parameter) {
+            message.channel.send(`No name given`);
+            return;
+        }
+
+        parameter = parameter.replace(/['"]+/g, '')
+
         pool.getConnection(function(err, connection) {
             pool.query("SELECT COUNT(pokedex.monster) FROM spots, pokedex WHERE monster = \"" + parameter + "\" and spots.pokemon = pokedex.id", function(error, result, fields) {
                 if (result[0]['COUNT(pokedex.monster)'] >= 1) {
@@ -246,7 +261,7 @@ client.on('message', message => {
                     console.log(datetime + `Gym search '` + parameter + `' by ` + message.author.username);
                     message.channel.send(`**Found: **`);
                     for (i = 0; i < result.length; i++) {
-                        message.channel.send([i+1] + `. ` + result[i].gname + ` ` + website + `/?loc=` + result[i].glatitude + `,` + result[i].glongitude + `&zoom=19`);
+                        message.channel.send([i + 1] + `. ` + result[i].gname + ` ` + website + `/?loc=` + result[i].glatitude + `,` + result[i].glongitude + `&zoom=19`);
                     }
                     connection.release();
 
