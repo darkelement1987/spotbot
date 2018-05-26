@@ -4,6 +4,7 @@ const client = new Discord.Client();
 const currentdate = new Date();
 const datetime = "[" + currentdate.getHours() + ":" + currentdate.getMinutes() + ":" + currentdate.getSeconds() + "] ";
 const config = require("./config.json");
+var list = new Array("commands", "ping", "spot", "spotted", "pokedex", "lastmon", "lastraid", "gym", "gyms", "searchgym");
 
 // START CONFIG
 
@@ -84,9 +85,13 @@ client.on('message', message => {
     } else
 
     if (command === 'commands') {
+        message.channel.send(`**Commands: **\n` + prefix + list.join("\n" + prefix));
 
-        message.channel.send(`hi ` + message.author.toString() + `\n\n**Current commands:**\n` + prefix + `pokedex <id>\n` +
-            prefix + `demo\n` + prefix + `spots\n` + prefix + `lastmon\n` + prefix + `gym <id>\n` + prefix + `gyms\n` + prefix + `spotted`);
+    } else
+
+    if (command === 'ping') {
+
+        message.channel.send(`I am alive!`);
     } else
 
     if (command === 'spots') {
