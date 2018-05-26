@@ -219,10 +219,10 @@ client.on('message', message => {
             parameter = parameter.replace(/['"]+/g, '')
 
             pool.getConnection(function(err, connection) {
-                pool.query("SELECT gname, gid FROM gyms WHERE gid = " + parameter, function(error, result, rows, fields, data) {
+                pool.query("SELECT gname, gid, glatitude, glongitude FROM gyms WHERE gid = " + parameter, function(error, result, rows, fields, data) {
                     if (result.length >= 1) {
                         console.log(datetime + `Gym ${parameter} (` + result[0].gname + `) requested by ` + message.author.username);
-                        message.channel.send(`Gym ${parameter} is: ` + (result[0].gname));
+                        message.channel.send(`Gym ${parameter} is: ` + (result[0].gname) + ` ` + website + `/?loc=` + result[0].glatitude + `,` + result[0].glongitude + `&zoom=19`);
                     } else if (rows.length !== 0) {
                         console.log(datetime + `Gym ${parameter} requested by ` + message.author.username + `, but does not exist`);
                         message.channel.send(`Gym id '` + parameter + `' does not exist`);
