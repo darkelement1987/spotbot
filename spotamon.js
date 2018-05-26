@@ -64,7 +64,7 @@ client.on('message', message => {
                         console.log(datetime + `Pokemon ${parameter} (` + result[0].monster + `) requested by ` + message.author.username);
                         message.channel.send(`Pokemon ${parameter} is: ` + (result[0].monster));
                     } else if (rows.length !== 0) {
-                        console.log(datetime + `Pokemon ${parameter} requested by ` + message.author.username);
+                        console.log(datetime + `Pokemon ${parameter} requested by ` + message.author.username + ` but does not exist`);
                         message.channel.send(`Pokemon id '` + parameter + `' does not exist`);
                     };
                     // Handle error after the release.
@@ -128,6 +128,11 @@ client.on('message', message => {
 
             if (parameter >= 16) {
                 message.channel.send(`Maximum number is 15`);
+                return;
+            }
+
+            if (parameter < 0) {
+                message.channel.send(`Request can not be below 0`);
                 return;
             }
 
