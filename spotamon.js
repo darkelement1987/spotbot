@@ -127,13 +127,13 @@ client.on('message', message => {
             }
 
             pool.getConnection(function(err, connection) {
-                pool.query("SELECT pokedex.monster, spots.spotid, spots.date,spots.fulladdress, spots.spotter FROM pokedex,spots WHERE pokedex.id = spots.pokemon ORDER BY spots.spotid DESC LIMIT " + parameter, function(error, result, rows, fields) {
+                pool.query("SELECT pokedex.monster, spots.spotid, spots.date,spots.fulladdress, spots.spotter, spots.latitude, spots.longitude FROM pokedex,spots WHERE pokedex.id = spots.pokemon ORDER BY spots.spotid DESC LIMIT " + parameter, function(error, result, rows, fields) {
                     if (result.length < parameter) {
                         message.channel.send(`There not ` + parameter + ` spots yet, try less`);
 
                     } else {
                         for (i = 0; i < result.length; i++) {
-                            message.channel.send([i + 1] + `. ` + result[i].monster + ` at ` + result[i].fulladdress);
+                            message.channel.send([i + 1] + `. ` + result[i].monster + ` at ` + result[i].fulladdress + ` ` + website + `/?loc=` + result[i].latitude + `,` + result[i].longitude + `&zoom=19`);
                         }
                         console.log(datetime + `Last ` + parameter + ` spots requested by ` + message.author.username);
                         connection.release();
