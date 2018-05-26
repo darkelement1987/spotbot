@@ -113,27 +113,45 @@ client.on('message', message => {
 
     if (command === 'lastmon') {
 
-        pool.getConnection(function(err, connection) {
-            pool.query("SELECT pokedex.monster, spots.spotid, spots.date,spots.fulladdress, spots.spotter FROM pokedex,spots WHERE pokedex.id = spots.pokemon ORDER BY spots.spotid DESC LIMIT 3", function(error, result, rows, fields) {
-                if (result.length >= 3) {
-                    console.log(datetime + `Last 3 spots requested by ` + message.author.username);
-                    message.channel.send(`**Last 3 spots:  **`)
-                    message.channel.send(`1.  ` + result[0].monster + ` at ` + result[0].fulladdress)
-                    message.channel.send(`2.  ` + result[1].monster + ` at ` + result[1].fulladdress)
-                    message.channel.send(`3.  ` + result[2].monster + ` at ` + result[2].fulladdress)
-                    connection.release();
-                } else {
-                    console.log(datetime + `Last 3 spots requested by ` + message.author.username + ` but non were available`);
-                    message.channel.send(`There should be a minimum of 3 spots in the db to perform this command`);
-                    connection.release()
-                };
+        if (typeof parameter != 'undefined' && parameter) {
+            if (!isNumber(parameter)) {
+                message.channel.send(`Wrong format`);
+                return;
+            }
 
-                // Handle error after the release.
-                if (error) throw error;
+            parameter = parameter.replace(/['"]+/g, '')
 
-                // Don't use the connection here, it has been returned to the pool.
+            if (parameter >= 16) {
+                message.channel.send(`Maximum number is 15`);
+                return;
+            }
+
+            pool.getConnection(function(err, connection) {
+                pool.query("SELECT pokedex.monster, spots.spotid, spots.date,spots.fulladdress, spots.spotter FROM pokedex,spots WHERE pokedex.id = spots.pokemon ORDER BY spots.spotid DESC LIMIT " + parameter, function(error, result, rows, fields) {
+                    if (result.length < parameter) {
+                        message.channel.send(`There not ` + parameter + ` spots yet, try less`);
+
+                    } else {
+                        for (i = 0; i < result.length; i++) {
+                            message.channel.send([i + 1] + `. ` + result[i].monster + ` at ` + result[i].fulladdress);
+                        }
+                        console.log(datetime + `Last ` + parameter + ` spots requested by ` + message.author.username);
+                        connection.release();
+                    };
+
+                    // Handle error after the release.
+                    if (error) throw error;
+
+                    // Don't use the connection here, it has been returned to the pool.
+                });
             });
-        });
+
+
+        } else {
+            message.channel.send(`Please enter a valid number`)
+        };
+
+
     } else
 
     if (command === 'lastraid') {
