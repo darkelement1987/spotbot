@@ -2,22 +2,22 @@ var mysql = require('mysql');
 const Discord = require('discord.js');
 const client = new Discord.Client();
 const currentdate = new Date();
-const datetime = "[" + currentdate.getHours() + ":" +
-    currentdate.getMinutes() + ":" + currentdate.getSeconds() + "] ";
+const datetime = "[" + currentdate.getHours() + ":" + currentdate.getMinutes() + ":" + currentdate.getSeconds() + "] ";
+const config = require("./config.json");
 
 // START CONFIG
 
-const website = ""; // <-- Website of your map, full url without backslash '/' at the end
-const prefix = ""; // <-- Prefix for your commands
-const logchannel = ""; // <-- Channel id where the 'logged in'-msg will show
-const bottoken = ""; // <-- Discord bot token
+const website = config.website;
+const prefix = config.prefix;
+const logchannel = config.logchannel;
+const bottoken = config.bottoken;
 
 var pool = mysql.createPool({
     connectionLimit: 10,
-    host: "",
-    user: "",
-    password: "",
-    database: ""
+    host: config.host,
+    user: config.user,
+    password: config.password,
+    database: config.database
 });
 
 // END OF CONFIG
